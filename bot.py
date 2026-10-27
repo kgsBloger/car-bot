@@ -33,7 +33,7 @@ def generate_ai_article(item_name):
     
     # Latest SDK ke sath yeh bilkul sahi chalega
     model = genai.GenerativeModel('gemini-1.5-flash')
-    response = model.generate_content(prompt)
+    model = genai.GenerativeModel('gemini-2.0-flash')
     return response.text
 
 def send_to_blogger():
