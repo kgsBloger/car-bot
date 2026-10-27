@@ -11,7 +11,7 @@ import google.generativeai as genai
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
 SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
-BLOGGER_EMAIL = os.environ.get("BLOGGER_EMAIL", "khageshwarbarik1111.myblogs@blogger.com")
+BLOGGER_EMAIL = os.environ.get("BLOGGER_EMAIL", "khageshwarbarik1111.myblogss@blogger.com")
 
 
 def generate_luxury_content():
