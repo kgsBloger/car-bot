@@ -1,111 +1,117 @@
-#!/usr/bin/env python3
-"""
-Car Bot - Auto AI Luxury Car Article Generator & Blogger Publisher
-Updated for Gemini 3.8 Flash
-"""
-
 import os
 import random
-import sys
+import smtplib
+import urllib.parse
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import google.generativeai as genai
 
-# ==========================================
-# 1. API KEY & MODEL CONFIGURATION
-# ==========================================
+# ================= Configuration & Secrets =================
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-BLOGGER_BLOG_ID = os.environ.get("BLOGGER_BLOG_ID")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
+SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
+BLOGGER_EMAIL = os.environ.get("BLOGGER_EMAIL", "khageshwarbarik1111.myblogs@blogger.com")
 
-if not GEMINI_API_KEY:
-    print("ERROR: GEMINI_API_KEY secret is not set in environment variables.")
-    sys.exit(1)
-
-genai.configure(api_key=GEMINI_API_KEY)
-
-# ✅ नया सक्रिय मॉडल: gemini-3.8-flash
-model = genai.GenerativeModel('gemini-3.8-flash')
-
-# लग्जरी कारों की लिस्ट (ऑटोमैटिक आर्टिकल के लिए)
-LUXURY_CARS = [
+# Luxury items ki list
+LUXURY_DATABASE = [
     "Rolls-Royce Phantom Luxury Car",
-    "Bentley Flying Spur Mulliner",
-    "Mercedes-Maybach S 680",
-    "Aston Martin DBS 770 Ultimate",
-    "Ferrari Purosangue V12",
-    "Lamborghini Revuelto Hybrid V12",
-    "Porsche 911 GT3 RS",
-    "Bugatti Tourbillon Hypercar"
+    "Gulfstream G700 Private Jet",
+    "Rolex Cosmograph Daytona Gold Watch",
+    "Haute Couture Luxury Evening Gown",
+    "Venice Simplon-Orient-Express Luxury Train",
+    "Custom Designer Superyacht",
+    "Penthouse Suite with Ocean View",
+    "Diamond Encrusted Luxury Smartphone"
 ]
 
-# ==========================================
-# 2. AI ARTICLE GENERATION
-# ==========================================
+
+def clean_gemini_html(text: str) -> str:
+    """Gemini ke response se extra markdown (```html ... ```) saaf karta hai"""
+    text = text.strip()
+    if text.startswith("```html"):
+        text = text[7:]
+    elif text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    return text.strip()
+
+
 def generate_ai_article(item_name: str) -> str:
-    """
-    Gemini 3.8 Flash se Blogger ke liye direct HTML article generate karta hai
-    """
-    print(f"Generating quick AI article and unique content for: {item_name}...")
-    
-    prompt = f"""
-    You are an expert automotive journalist for an ultra-luxury lifestyle blog.
-    Write an in-depth, captivating, SEO-optimized blog article about: '{item_name}'.
-
-    Output ONLY clean HTML tags suitable for direct publishing on Blogger:
-    - <h2>The Pinnacle of Luxury: An Overview</h2>
-    - 3 engaging paragraphs highlighting heritage, bespoke design, and road presence
-    - <h3>Engine Performance & Engineering Feats</h3>
-    - Detailed breakdown of powertrain, acceleration, driving dynamics
-    - <h3>Exquisite Craftsmanship & Bespoke Cabin</h3>
-    - Discussion of materials, leather, acoustic isolation, tech
-    - <h3>Technical Specifications</h3>
-    - HTML <table> or bullet points with Engine, HP, Top Speed, Starting Price
-    - <h2>Verdict</h2>
-    - Final commanding conclusion for discerning collectors
-    """
-    
+    """Chota aur fast SEO optimized article generate karega"""
     try:
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        # Clean markdown fences if returned
-        if text.startswith("```html"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        return text.strip()
-    except Exception as e:
-        print(f"Error during AI content generation: {e}")
-        raise e
-
-# ==========================================
-# 3. BLOGGER PUBLISHING FUNCTION
-# ==========================================
-def send_to_blogger():
-    # 1. कार चुनें
-    selected_car = random.choice(LUXURY_CARS)
-    print(f"Selected Car Topic: {selected_car}")
-    
-    # 2. AI आर्टिकल बनाएं
-    article_body = generate_ai_article(selected_car)
-    post_title = f"{selected_car}: Ultimate Luxury & Performance Review"
-    
-    print("=" * 60)
-    print(f"POST TITLE: {post_title}")
-    print(f"ARTICLE LENGTH: {len(article_body)} characters")
-    print("=" * 60)
-    
-    # 3. ब्लॉगर पर पब्लिश करें
-    if BLOGGER_BLOG_ID:
-        print(f"Publishing to Blogger Blog ID: {BLOGGER_BLOG_ID}...")
-        # Aapka Blogger publishing code yaha execute hoga
-        print("Successfully published article to Blogger!")
-    else:
-        print("Note: BLOGGER_BLOG_ID not set. Article generated successfully.")
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
-    print("Done! Process completed successfully.")
+        prompt = (
+            f"Write a short, engaging luxury lifestyle blog post about '{item_name}' in about 150 to 200 words. "
+            f"Make it sound professional, ultra-luxurious, and aspirational. "
+            f"Use clean HTML tags like <h2> for headings and <p> for paragraphs. "
+            f"Do NOT include markdown backticks (like ```html), <html>, or <body> tags. Return ONLY the raw inner HTML."
+        )
+        
+        response = model.generate_content(prompt)
+        return clean_gemini_html(response.text)
+    except Exception as e:
+        print(f"Error generating AI content: {e}")
+        return None
 
-# ==========================================
-# 4. ENTRY POINT
-# ==========================================
+
+def send_to_blogger():
+    # Passwords aur Keys check
+    if not all([GEMINI_API_KEY, SENDER_EMAIL, SENDER_PASSWORD]):
+        print("Error: Missing environment variables! GEMINI_API_KEY, SENDER_EMAIL ya SENDER_PASSWORD missing hai.")
+        return
+
+    # Item choose karna
+    item_name = random.choice(LUXURY_DATABASE)
+    print(f"Generating article and Full HD image for: {item_name}...")
+    
+    # 1. Article generate karna
+    article_body = generate_ai_article(item_name)
+    if not article_body:
+        print("Failed to generate article. Email nahi bheja gaya.")
+        return
+
+    # 2. Full HD (1920x1080) AI Image URL generation
+    image_prompt = f"Ultra realistic, 8k resolution, professional luxury photography of {item_name}, high-end editorial style, cinematic lighting"
+    encoded_prompt = urllib.parse.quote(image_prompt)
+    random_seed = random.randint(1, 999999)  # Isse har baar bilkul nayi photo banegi
+    
+    # yahan width=1920 aur height=1080 (Full HD) set kiya gaya hai
+    ai_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1920&height=1080&nologo=true&seed={random_seed}"
+
+    # 3. HTML Post structure
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+        {article_body}
+        <br><br>
+        <div style="text-align: center; margin-top: 25px;">
+            <img src="{ai_image_url}" alt="{item_name}" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+        </div>
+    </div>
+    """
+
+    # 4. Email Setup
+    msg = MIMEMultipart("alternative")
+    msg['From'] = SENDER_EMAIL
+    msg['To'] = BLOGGER_EMAIL
+    msg['Subject'] = f"{item_name} - Exclusive Luxury Review"
+    msg.attach(MIMEText(html_content, 'html'))
+
+    # 5. Email send karna
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(msg)
+            
+        print(f"Success! Full HD post successfully published for: {item_name}")
+    except smtplib.SMTPAuthenticationError:
+        print("SMTP Error: Gmail login fail! Gmail App Password sahi se check karein.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+
 if __name__ == "__main__":
     send_to_blogger()
