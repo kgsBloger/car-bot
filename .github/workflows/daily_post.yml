@@ -1,0 +1,26 @@
+name: Car of the Day Bot
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # Roz subah 9 baje chalega
+  workflow_dispatch: # Isse aap manually bhi jab chahein chala sakte hain
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Run bot script
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        run: |
+          python bot.py
+          
