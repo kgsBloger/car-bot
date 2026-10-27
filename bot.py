@@ -31,8 +31,8 @@ def generate_ai_article(item_name):
     Do not include any markdown code blocks in your output, just provide clean HTML paragraphs (<p>...</p>) and subheadings (<h2>...</h2>) so it can be directly posted to a blog.
     """
     
-    # Yahan model name update kar diya hai
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    # Latest SDK ke sath yeh bilkul sahi chalega
+    model = genai.GenerativeModel('gemini-1.5-flash')
     response = model.generate_content(prompt)
     return response.text
 
@@ -87,4 +87,3 @@ def send_to_blogger():
 
 if __name__ == "__main__":
     send_to_blogger()
-    
