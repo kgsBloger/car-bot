@@ -1,0 +1,30 @@
+name: Daily Luxury Blog Post
+
+on:
+  schedule:
+    # 00:30 UTC = Indian Standard Time (IST) Subah theek 6:00 AM
+    - cron: '30 0 * * *'
+  workflow_dispatch: # Isse aap jab chahe 'Run' button daba kar bhi test kar sakte hain
+
+jobs:
+  post_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          BLOGGER_EMAIL: ${{ secrets.BLOGGER_EMAIL }}
+        run: python main.py
