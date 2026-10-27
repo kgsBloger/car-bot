@@ -4,23 +4,37 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import random
 
-# List of sample cars for the daily blog
-CARS = [
+# Rich list of luxury items across cars, airplanes, watches, dresses, and more
+ITEMS = [
     {
-        "title": "Car of the Day: 2026 Tesla Model 3 Performance",
-        "body": "The 2026 Tesla Model 3 Performance brings blistering acceleration, a revamped interior, and razor-sharp handling. A true electric icon for speed enthusiasts."
+        "title": "Luxury Car of the Day: Rolls-Royce Phantom Series II",
+        "body": "The epitome of bespoke luxury and effortless power. The Rolls-Royce Phantom Series II offers a majestic presence, handcrafted interior, and a silent 'magic carpet' ride that redefines automotive elegance.",
+        "image": "https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=1920&auto=format&fit=crop"
     },
     {
-        "title": "Car of the Day: Hyundai Ioniq 5 N",
-        "body": "The Hyundai Ioniq 5 N redefines what an EV can do with simulated gear shifts, incredible track capability, and aggressive styling."
+        "title": "Private Jet of the Day: Gulfstream G700",
+        "body": "Redefining ultra-long-range private aviation, the Gulfstream G700 features the most spacious cabin in the industry, biophilic lighting, ultra-comfortable seating, and breathtaking cruising speeds.",
+        "image": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1920&auto=format&fit=crop"
     },
     {
-        "title": "Car of the Day: Ford Mustang Dark Horse",
-        "body": "Powered by a ferocious V8 engine, the Ford Mustang Dark Horse delivers raw American muscle power paired with advanced track tech."
+        "title": "Luxury Watch of the Day: Rolex Cosmograph Daytona",
+        "body": "A masterpiece of horological engineering. Designed for endurance racing drivers, the Rolex Daytona combines high-performance chronograph precision with timeless luxury and iconic design.",
+        "image": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1920&auto=format&fit=crop"
     },
     {
-        "title": "Car of the Day: Toyota GR Supra",
-        "body": "A blend of precision engineering and sports car heritage, the Toyota GR Supra offers unmatched driving thrills on every twisty road."
+        "title": "Haute Couture Dress of the Day: Elegant Red Evening Gown",
+        "body": "Crafted from finest silk chiffon with intricate hand-stitched detailing, this haute couture gown captures timeless grace, sophistication, and a dramatic silhouette for grand occasions.",
+        "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=1920&auto=format&fit=crop"
+    },
+    {
+        "title": "Luxury Train Journey: The Venice Simplon-Orient-Express",
+        "body": "Step back into the golden age of travel. The Venice Simplon-Orient-Express offers legendary vintage cabins, exquisite fine dining, and breathtaking alpine views across Europe.",
+        "image": "https://images.unsplash.com/photo-1515165562839-978bbcfc9282?q=80&w=1920&auto=format&fit=crop"
+    },
+    {
+        "title": "Luxury Superyacht of the Day: Custom Ocean Master",
+        "body": "The ultimate symbol of marine luxury. Featuring multi-deck infinity pools, helipads, lavish state rooms, and state-of-the-art navigation for unrivaled oceanic adventures.",
+        "image": "https://images.unsplash.com/photo-1569263979104-865ab9cd8d5c?q=80&w=1920&auto=format&fit=crop"
     }
 ]
 
@@ -29,15 +43,24 @@ def send_to_blogger():
     sender_password = os.environ.get("SENDER_PASSWORD")
     blogger_email = "khageshwarbarik1111.myblogs@blogger.com"
     
-    # Pick a random car for today
-    car = random.choice(CARS)
+    # Pick a random luxury item for today
+    item = random.choice(ITEMS)
     
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = blogger_email
-    msg['Subject'] = car['title']
+    msg['Subject'] = item['title']
     
-    msg.attach(MIMEText(car['body'], 'plain'))
+    # HTML body with Full HD image embedding so Blogger renders it beautifully in the post
+    html_content = f"""
+    <div>
+        <p style="font-size: 16px; line-height: 1.6;">{item['body']}</p>
+        <br>
+        <img src="{item['image']}" alt="{item['title']}" style="max-width:100%; height:auto; border-radius: 8px;" />
+    </div>
+    """
+    
+    msg.attach(MIMEText(html_content, 'html'))
     
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -45,7 +68,7 @@ def send_to_blogger():
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, blogger_email, msg.as_string())
         server.quit()
-        print("Blog post sent successfully via email!")
+        print("Luxury blog post with Full HD image sent successfully!")
     except Exception as e:
         print(f"Error sending email: {e}")
 
