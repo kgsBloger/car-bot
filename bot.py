@@ -106,4 +106,3 @@ def send_to_blogger():
 
 if __name__ == "__main__":
     send_to_blogger()
-    
