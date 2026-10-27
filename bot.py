@@ -27,18 +27,18 @@ CARS = [
 def send_to_blogger():
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
-    blogger_email = os.environ.get("SENDER_EMAIL") # Usually your Blogger secret email
-
+    blogger_email = "khageshwarbarik1111.myblogs@blogger.com"
+    
     # Pick a random car for today
     car = random.choice(CARS)
     
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = blogger_email
-    msg['Subject'] = car["title"]
-
-    msg.attach(MIMEText(car["body"], 'plain'))
-
+    msg['Subject'] = car['title']
+    
+    msg.attach(MIMEText(car['body'], 'plain'))
+    
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
@@ -51,4 +51,3 @@ def send_to_blogger():
 
 if __name__ == "__main__":
     send_to_blogger()
-  
